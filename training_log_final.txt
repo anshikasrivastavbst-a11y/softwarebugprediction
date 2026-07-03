@@ -1,0 +1,183 @@
+[10:35:03] ======================================================================
+[10:35:03] FINAL LEAKAGE-FREE TRAINING RUN
+[10:35:03] Started : 2026-07-03T10:35:03.722837
+[10:35:03] ======================================================================
+[10:35:03] 
+STEP 1: Loading datasets...
+[10:35:03]   Loaded ant-1.7 (1).csv                               rows=  745  buggy=77.7%
+[10:35:03]   Loaded camel-1.6 (1).csv                             rows=  965  buggy=80.5%
+[10:35:03]   Loaded csv_result-JM1''.csv                          rows= 7782  buggy=21.5%
+[10:35:03]   Loaded data_arc (1).csv                              rows=  225  buggy=87.1%
+[10:35:03]   Loaded data_ivy-2.0 (1).csv                          rows=  352  buggy=88.6%
+[10:35:03]   Loaded data_prop-6 (1).csv                           rows=  644  buggy=90.5%
+[10:35:03]   Loaded data_redaktor (1).csv                         rows=  175  buggy=84.6%
+[10:35:03]   Loaded jedit-3.2.csv                                 rows=  272  buggy=66.9%
+[10:35:03]   Loaded jedit-4.2.csv                                 rows=  367  buggy=86.9%
+[10:35:03]   Loaded kc1.csv                                       rows= 2109  buggy=15.5%
+[10:35:03]   Loaded log4j-1.1.csv                                 rows=  109  buggy=66.1%
+[10:35:03]   Loaded lucene-2.0.csv                                rows=  195  buggy=53.3%
+[10:35:03]   Loaded pc1.csv                                       rows= 1109  buggy=6.9%
+[10:35:03]   Loaded poi-2.0.csv                                   rows=  314  buggy=88.2%
+[10:35:03]   Loaded synapse-1.0.csv                               rows=  157  buggy=90.4%
+[10:35:03]   Loaded synapse-1.2.csv                               rows=  256  buggy=66.4%
+[10:35:03]   Loaded tomcat.csv                                    rows=  858  buggy=9.0%
+[10:35:03]   Loaded velocity-1.6.csv                              rows=  229  buggy=65.9%
+[10:35:03]   Loaded xalan-2.4.csv                                 rows=  723  buggy=84.8%
+[10:35:03]   Loaded xerces-1.2.csv                                rows=  440  buggy=84.1%
+[10:35:03]   Loaded xerces-1.3.csv                                rows=  453  buggy=84.8%
+[10:35:03] 
+  Rows before dedup : 18479
+[10:35:03]   Rows after  dedup : 16877
+[10:35:03]   Datasets loaded   : 21
+[10:35:03]   Class distribution:
+target
+0    9895
+1    6982
+[10:35:03] 
+STEP 2: Preprocessing...
+[10:35:03]   Shape after preprocessing : (16877, 65)
+[10:35:03]   NaN values remaining      : 0
+[10:35:03] 
+STEP 3: Three-way stratified split  70 / 15 / 15...
+[10:35:03]   Train : 11813 rows  (70.0%)  buggy=41.4%
+[10:35:03]   Cal   :  2532 rows  (15.0%)  buggy=41.4%
+[10:35:03]   Test  :  2532 rows  (15.0%)  buggy=41.4%
+[10:35:03]   [TEST SET NOW ISOLATED — will not be touched until Step 12]
+[10:35:03] 
+STEP 4: Scaling (RobustScaler, fit on train only)...
+[10:35:03]   Scaler fitted on train set only.
+[10:35:03] 
+STEP 5: Feature selection (XGBoost importance on clean train set)...
+[10:35:05]   Original features  : 64
+[10:35:05]   Selected features  : 63
+[10:35:05]   Dropped (zero imp) : ['unified_loc']
+[10:35:05] 
+STEP 6: Optuna tuning — XGBoost (50 trials, SMOTE inside fold)...
+[10:39:25]   XGBoost best CV Macro F1 : 0.7829  (260s)
+[10:39:25]   Best params : {'n_estimators': 456, 'max_depth': 7, 'learning_rate': 0.02195233588633907, 'subsample': 0.8103395510738401, 'colsample_bytree': 0.5163332178388333, 'min_child_weight': 3, 'gamma': 2.925188559116349, 'eval_metric': 'logloss', 'random_state': 42}
+[10:39:25] 
+STEP 7: Optuna tuning — LightGBM (50 trials, SMOTE inside fold)...
+[10:40:35]   LightGBM best CV Macro F1 : 0.7795  (70s)
+[10:40:35]   Best params : {'n_estimators': 385, 'max_depth': 7, 'learning_rate': 0.03535046721710515, 'subsample': 0.8637789191162725, 'colsample_bytree': 0.7498329826018357, 'min_child_samples': 6, 'reg_alpha': 0.006113183854513676, 'reg_lambda': 1.887365122666158, 'random_state': 42, 'verbose': -1, 'class_weight': 'balanced'}
+[10:40:35] 
+STEP 8: Optuna tuning — RandomForest (30 trials, SMOTE inside fold)...
+[10:43:17]   RandomForest best CV Macro F1 : 0.7832  (162s)
+[10:43:17]   Best params : {'n_estimators': 194, 'max_depth': 11, 'max_features': 0.46474177024704466, 'min_samples_split': 13, 'min_samples_leaf': 9, 'random_state': 42, 'n_jobs': -1, 'class_weight': 'balanced'}
+[10:43:17] 
+STEP 9: Building stacking ensemble (OOF, SMOTE-per-fold)...
+[10:43:17]   Fold 1/5 ...
+[10:43:19]   Fold 2/5 ...
+[10:43:21]   Fold 3/5 ...
+[10:43:23]   Fold 4/5 ...
+[10:43:25]   Fold 5/5 ...
+[10:43:27]   Meta-learner trained. (10s)
+[10:43:27] 
+STEP 10: Retraining base learners on full training set (SMOTE applied once)...
+[10:43:27]   SMOTE balanced training set: {np.int64(0): np.int64(6926), np.int64(1): np.int64(6926)}
+[10:43:29]   Base learners ready. (2s)
+[10:43:29] 
+STEP 11: Isotonic calibration on cal set ONLY (test set NOT used)...
+[10:43:29]   Isotonic calibration fitted on cal set only.
+[10:43:29] 
+STEP 11b: Threshold tuning on cal set ONLY (test set NOT used)...
+[10:43:29]    Thresh   MacroF1   BuggyF1     NB-F1   BuggyRec    NB-Rec
+[10:43:29]   0.20   0.7119    0.7189    0.7050    0.8893    0.5869
+[10:43:29]   0.21   0.7119    0.7189    0.7050    0.8893    0.5869
+[10:43:29]   0.22   0.7119    0.7189    0.7050    0.8893    0.5869
+[10:43:29]   0.23   0.7686    0.7494    0.7877    0.8302    0.7278
+[10:43:29]   0.24   0.7686    0.7494    0.7877    0.8302    0.7278
+[10:43:29]   0.25   0.7686    0.7494    0.7877    0.8302    0.7278
+[10:43:29]   0.26   0.7686    0.7494    0.7877    0.8302    0.7278
+[10:43:29]   0.27   0.7686    0.7494    0.7877    0.8302    0.7278
+[10:43:29]   0.28   0.7686    0.7494    0.7877    0.8302    0.7278
+[10:43:29]   0.29   0.7686    0.7494    0.7877    0.8302    0.7278
+[10:43:29]   0.30   0.7686    0.7494    0.7877    0.8302    0.7278
+[10:43:29]   0.31   0.7686    0.7494    0.7877    0.8302    0.7278
+[10:43:29]   0.32   0.7686    0.7494    0.7877    0.8302    0.7278
+[10:43:29]   0.33   0.7686    0.7494    0.7877    0.8302    0.7278
+[10:43:29]   0.34   0.7809    0.7532    0.8086    0.7948    0.7770
+[10:43:29]   0.35   0.7809    0.7532    0.8086    0.7948    0.7770
+[10:43:29]   0.36   0.7809    0.7532    0.8086    0.7948    0.7770
+[10:43:29]   0.37   0.7913    0.7546    0.8281    0.7510    0.8309
+[10:43:29]   0.38   0.7913    0.7546    0.8281    0.7510    0.8309
+[10:43:29]   0.39   0.7913    0.7546    0.8281    0.7510    0.8309
+[10:43:29]   0.40   0.7913    0.7546    0.8281    0.7510    0.8309
+[10:43:29]   0.41   0.7913    0.7546    0.8281    0.7510    0.8309
+[10:43:29]   0.42   0.7913    0.7546    0.8281    0.7510    0.8309
+[10:43:29]   0.43   0.7915    0.7542    0.8288    0.7481    0.8336 <-- SELECTED
+[10:43:29]   0.44   0.7915    0.7542    0.8288    0.7481    0.8336
+[10:43:29]   0.45   0.7915    0.7542    0.8288    0.7481    0.8336
+[10:43:29]   0.46   0.7915    0.7542    0.8288    0.7481    0.8336
+[10:43:29]   0.47   0.7914    0.7507    0.8321    0.7300    0.8484
+[10:43:29]   0.48   0.7914    0.7507    0.8321    0.7300    0.8484
+[10:43:29]   0.49   0.7914    0.7507    0.8321    0.7300    0.8484
+[10:43:29]   0.50   0.7913    0.7502    0.8323    0.7281    0.8497
+[10:43:29]   0.51   0.7913    0.7502    0.8323    0.7281    0.8497
+[10:43:29]   0.52   0.7857    0.7347    0.8366    0.6765    0.8834
+[10:43:29]   0.53   0.7857    0.7347    0.8366    0.6765    0.8834
+[10:43:29]   0.54   0.7857    0.7347    0.8366    0.6765    0.8834
+[10:43:29]   0.55   0.7857    0.7347    0.8366    0.6765    0.8834
+[10:43:29]   0.56   0.7857    0.7347    0.8366    0.6765    0.8834
+[10:43:29]   0.57   0.7857    0.7347    0.8366    0.6765    0.8834
+[10:43:29]   0.58   0.7733    0.7098    0.8368    0.6174    0.9137
+[10:43:29]   0.59   0.7733    0.7098    0.8368    0.6174    0.9137
+[10:43:29]   0.60   0.7733    0.7098    0.8368    0.6174    0.9137
+[10:43:29]   0.61   0.7733    0.7098    0.8368    0.6174    0.9137
+[10:43:29]   0.62   0.7733    0.7098    0.8368    0.6174    0.9137
+[10:43:29]   0.63   0.7733    0.7098    0.8368    0.6174    0.9137
+[10:43:29]   0.64   0.7733    0.7098    0.8368    0.6174    0.9137
+[10:43:29]   0.65   0.7733    0.7098    0.8368    0.6174    0.9137
+[10:43:29]   0.66   0.7678    0.7001    0.8355    0.5992    0.9205
+[10:43:29]   0.67   0.7678    0.7001    0.8355    0.5992    0.9205
+[10:43:29]   0.68   0.7678    0.7001    0.8355    0.5992    0.9205
+[10:43:29]   0.69   0.7678    0.7001    0.8355    0.5992    0.9205
+[10:43:29]   0.70   0.7678    0.7001    0.8355    0.5992    0.9205
+[10:43:29]   0.71   0.7678    0.7001    0.8355    0.5992    0.9205
+[10:43:29]   0.72   0.7280    0.6326    0.8234    0.4962    0.9488
+[10:43:29]   0.73   0.7280    0.6326    0.8234    0.4962    0.9488
+[10:43:29]   0.74   0.6962    0.5777    0.8148    0.4256    0.9663
+[10:43:29]   0.75   0.6962    0.5777    0.8148    0.4256    0.9663
+[10:43:29]   0.76   0.6767    0.5436    0.8097    0.3865    0.9751
+[10:43:29]   0.77   0.6767    0.5436    0.8097    0.3865    0.9751
+[10:43:29]   0.78   0.6767    0.5436    0.8097    0.3865    0.9751
+[10:43:29]   0.79   0.6767    0.5436    0.8097    0.3865    0.9751
+[10:43:29]   0.80   0.6511    0.4993    0.8030    0.3406    0.9832
+[10:43:29]   0.81   0.6511    0.4993    0.8030    0.3406    0.9832
+[10:43:29] 
+  Selected threshold : 0.43  (cal-set Macro F1 = 0.7915)
+[10:43:29]   [THRESHOLD SELECTED — cal set will not be used again]
+[10:43:29] 
+STEP 12: Saving artifacts...
+[10:43:29]   model.pkl           saved
+[10:43:29]   scaler.pkl          saved
+[10:43:29]   threshold.pkl       saved
+[10:43:29]   selected_features.pkl saved
+[10:43:29]   [ARTIFACTS FROZEN — will not be overwritten]
+[10:43:29] 
+STEP 13: FINAL EVALUATION ON UNTOUCHED TEST SET (used for the first and only time)
+[10:43:29] ======================================================================
+[10:43:29]               precision    recall  f1-score   support
+
+   Not Buggy       0.81      0.84      0.83      1485
+       Buggy       0.76      0.73      0.74      1047
+
+    accuracy                           0.79      2532
+   macro avg       0.79      0.78      0.79      2532
+weighted avg       0.79      0.79      0.79      2532
+
+[10:43:29] Accuracy           : 0.7930  (79.30%)
+[10:43:29] Macro F1           : 0.7852
+[10:43:29] Buggy F1           : 0.7441  (recall = 0.7278)
+[10:43:29] Not-Buggy F1       : 0.8263  (recall = 0.8391)
+[10:43:29] AUC-ROC            : 0.8465
+[10:43:29] Decision Threshold : 0.430  (tuned on cal set only)
+[10:43:29] Features used      : 63
+[10:43:29] Test set size      : 2532
+[10:43:29] 
+Confusion Matrix:
+[10:43:29]   [[TN=1246  FP=239]
+[10:43:29]    [FN=285  TP=762]]
+[10:43:29] ======================================================================
+[10:43:29] [EVALUATION COMPLETE — test set will not be used again]
+[10:43:29] 
+Run completed : 2026-07-03T10:43:29.955108
