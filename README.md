@@ -144,6 +144,11 @@ python generate_thesis_assets.py
 
 ---
 
+## 🚀 Live Demo
+Software Bug Prediction System (ML Project)  
+👉 https://softwarebugprediction.onrender.com
+
+
 ## Known Limitations
 
 1. **Test-set threshold tuning:** The decision threshold (0.475) was selected by
