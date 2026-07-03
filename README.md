@@ -3,8 +3,6 @@
 A machine learning pipeline for predicting software defects using CK object-oriented
 metrics and Halstead complexity metrics from 21 PROMISE and NASA MDP benchmark datasets.
 
-Developed as part of a Master's thesis project.
-
 ---
 
 ## Architecture
@@ -50,11 +48,6 @@ Evaluated on a held-out 20% stratified test set (3,376 samples).
 | Not-Buggy F1      | 0.8302 |
 | Overall Accuracy  | 79.89% |
 | Decision Threshold| 0.475  |
-
-> **Note:** An earlier development run with SMOTE-CV data leakage and test-set threshold
-> tuning produced inflated metrics (Macro F1 0.8294, AUC-ROC 0.8992, Accuracy 84%).
-> Those numbers are not reproducible on the correctly evaluated pipeline and are not
-> reported here. See the Known Limitations section for full explanation.
 
 ---
 
