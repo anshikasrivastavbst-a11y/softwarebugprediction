@@ -24,7 +24,7 @@ XGBoost   LightGBM  RandomForest
         |
   Isotonic Calibration
         |
-  Threshold 0.475
+  Threshold 0.430
         |
   Prediction (Buggy / Not Buggy)
 ```
@@ -40,21 +40,20 @@ XGBoost   LightGBM  RandomForest
 
 ## Final Metrics
 
-Evaluated on a held-out 20% stratified test set (3,376 samples).
+Evaluated on an untouched held-out test set of 2,532 samples. The decision threshold was selected using a separate calibration set, not the final test set.
 
-| Metric            | Value  |
-|-------------------|--------|
-| Macro F1          | 0.7896 |
-| AUC-ROC           | 0.8494 |
-| Buggy F1          | 0.7456 |
-| Not-Buggy F1      | 0.8302 |
-| Overall Accuracy  | 79.89% |
-| Decision Threshold| 0.475  |
+| Metric | Value |
+|---|---:|
+| Overall Accuracy | 79.30% |
+| Macro F1 | 0.7852 |
+| Buggy F1 | 0.7441 |
+| Buggy Recall | 72.78% |
+| Not-Buggy F1 | 0.8263 |
+| Not-Buggy Recall | 83.91% |
+| AUC-ROC | 0.8465 |
+| Decision Threshold | 0.430 |
 
-> **Note:** An earlier development run with SMOTE-CV data leakage and test-set threshold
-> tuning produced inflated metrics (Macro F1 0.8294, AUC-ROC 0.8992, Accuracy 84%).
-> Those numbers are not reproducible on the correctly evaluated pipeline and are not
-> reported here. See the Known Limitations section for full explanation.
+The reported metrics correspond to the final evaluation recorded in `training_log_final.txt`. An earlier development run reported different values; those results should not be treated as the final evaluation of the currently saved model artifacts.
 
 ---
 
@@ -146,22 +145,10 @@ python generate_thesis_assets.py
 
 ## Known Limitations
 
-1. **Test-set threshold tuning:** The decision threshold (0.475) was selected by
-   maximising Macro F1 on the same test set used for final evaluation. The correct
-   approach is a separate calibration split (70/15/15). This makes the reported
-   Macro F1 slightly optimistic. The AUC-ROC (0.8992) is threshold-independent
-   and fully honest.
+1. **Benchmark generalisation:** Performance is measured on the held-out test split of the benchmark datasets used in this project. Results may differ on unseen projects, repositories, programming languages, or real-world development environments.
 
-2. **CK-metrics ceiling:** Research literature (Menzies et al., D'Ambros et al.)
-   documents that CK-metrics-only bug prediction typically achieves 80-85% Macro F1
-   on PROMISE benchmark datasets. Results above this range on these datasets are
-   generally indicative of overfitting or data leakage.
+2. **Threshold selection:** The decision threshold of 0.430 was selected using the calibration set, with the final test set reserved for evaluation. The final test metrics are reported from `training_log_final.txt`.
 
-3. **SMOTE-CV leakage (fixed):** An earlier version applied SMOTE globally before
-   the Optuna CV loop, allowing synthetic samples to leak into validation folds and
-   inflate CV scores (0.84-0.85 CV vs 0.79 test). This was identified and fixed:
-   SMOTE is now applied inside each fold on training indices only.
+3. **SMOTE-CV leakage (historical issue):** An earlier development version applied SMOTE before cross-validation, which could introduce synthetic-sample leakage into validation folds. The current training pipeline is intended to apply SMOTE only to training data. Verify the implementation in `train.py` before making stronger claims about leakage prevention.
 
-4. **Not production-ready:** This pipeline is intended for research and portfolio
-   demonstration. It has not been validated for production defect triage and should
-   not be used for that purpose without further external validation.
+4. **Not production-ready:** This pipeline is intended for research and portfolio demonstration. It has not been validated for production defect triage and should not be used for that purpose without further external validation.
