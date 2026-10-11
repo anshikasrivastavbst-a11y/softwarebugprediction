@@ -9,7 +9,7 @@ The project includes a model training pipeline, a stacking ensemble, probability
 **Streamlit Web Application:**  
 https://softwarebugprediction.onrender.com
 
-The hosted application may take time to start if the hosting service is idle.
+The hosted application may take some time to start if the hosting service is idle.
 
 ## System Architecture
 
@@ -22,11 +22,11 @@ RobustScaler
        |
 Feature Selection (63 Features)
        |
-  +----+----+
-  |    |    |
- XGBoost   LightGBM   Random Forest
-  |    |    |
-  +----+----+
+  +----+----------+
+  |    |          |
+XGBoost  LightGBM  Random Forest
+  |    |          |
+  +----+----------+
        |
 Logistic Regression
    Meta-Learner
@@ -40,19 +40,19 @@ Buggy / Not Buggy
 
 ## Key Features
 
-- **Ensemble learning:** Combines XGBoost, LightGBM, and Random Forest with Logistic Regression as the meta-learner.
-- **Feature engineering:** Creates additional software complexity and coupling metrics.
-- **Feature selection:** Uses 63 selected features from the original 64-feature model input.
-- **Data preprocessing:** Handles missing values, removes selected noisy features, and scales numerical features.
-- **Class imbalance handling:** Uses SMOTE in the training pipeline.
-- **Hyperparameter optimization:** Uses Optuna to tune model parameters.
-- **Probability calibration:** Uses isotonic regression to calibrate prediction probabilities.
-- **Threshold-based classification:** Uses a decision threshold of 0.430.
-- **Multiple interfaces:** Supports a Streamlit web interface, a FastAPI REST API, and batch prediction.
+- **Ensemble Learning:** Combines XGBoost, LightGBM, and Random Forest with Logistic Regression as the meta-learner.
+- **Feature Engineering:** Creates additional software complexity and coupling metrics.
+- **Feature Selection:** Uses 63 selected features from a 64-feature scaled input.
+- **Data Preprocessing:** Processes numerical features, handles missing values, and removes selected noisy features.
+- **Class Imbalance Handling:** Uses SMOTE during training.
+- **Hyperparameter Optimization:** Uses Optuna to tune model parameters.
+- **Probability Calibration:** Uses isotonic regression to calibrate prediction probabilities.
+- **Threshold-Based Classification:** Applies a decision threshold of 0.430.
+- **Multiple Interfaces:** Supports a Streamlit web interface, a FastAPI REST API, and batch prediction.
 
 ## Model Performance
 
-The reported evaluation uses a held-out test set of 2,532 samples. The threshold was selected using a separate calibration set.
+The reported evaluation uses a held-out test set of 2,532 samples. The decision threshold was selected using a separate calibration set.
 
 | Metric | Value |
 |---|---:|
@@ -78,10 +78,10 @@ The project uses 21 PROMISE and NASA MDP benchmark datasets, with 16,877 samples
 
 | Dataset Group | Datasets |
 |---|---|
-| Apache projects | ant-1.7, camel-1.6, log4j-1.1, lucene-2.0, poi-2.0, xalan-2.4, xerces-1.2, xerces-1.3 |
+| Apache Projects | ant-1.7, camel-1.6, log4j-1.1, lucene-2.0, poi-2.0, xalan-2.4, xerces-1.2, xerces-1.3 |
 | Eclipse / IDE | jedit-3.2, jedit-4.2 |
-| Other open-source projects | velocity-1.6, synapse-1.0, synapse-1.2, tomcat |
-| Additional projects | data_arc, data_ivy-2.0, data_prop-6, data_redaktor |
+| Other Open-Source Projects | velocity-1.6, synapse-1.0, synapse-1.2, tomcat |
+| Additional Projects | data_arc, data_ivy-2.0, data_prop-6, data_redaktor |
 | NASA MDP | kc1, pc1, JM1 |
 
 ## Technology Stack
@@ -111,30 +111,24 @@ softwarebugprediction/
 ├── predict.py
 ├── experiment.py
 ├── requirements.txt
-├── model.pkl
-├── scaler.pkl
-├── selected_features.pkl
-├── threshold.pkl
-├── imputer.pkl
-├── test.csv
-├── predictions_output.csv
-├── training_log_final.txt
 ├── MODEL_CARD.md
 └── README.md
 ```
 
+The repository may also contain saved model artifacts, test files, logs, and prediction outputs. Add them to this tree if they are present and relevant to the project.
+
 ## Installation
 
-### 1. Clone the repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/anshikasrivastavbst-a11y/softwarebugprediction.git
 cd softwarebugprediction
 ```
 
-### 2. Create a virtual environment
+### 2. Create a Virtual Environment
 
-**Windows:**
+**Windows PowerShell:**
 
 ```powershell
 py -m venv .venv
@@ -148,7 +142,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-### 3. Install dependencies
+### 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -156,9 +150,9 @@ pip install -r requirements.txt
 
 ## How to Run
 
-### Run the Streamlit application
+### Run the Streamlit Web Application
 
-```bash
+```powershell
 py -m streamlit run streamlit_app.py
 ```
 
@@ -168,7 +162,7 @@ Open the local URL displayed in the terminal.
 
 Start the API:
 
-```bash
+```powershell
 py -m uvicorn app:app --reload
 ```
 
@@ -176,55 +170,57 @@ Open the interactive API documentation:
 
 http://127.0.0.1:8000/docs
 
-The API documentation is available locally while the server is running. The FastAPI API has been tested locally with feature input; a separate public API deployment is not currently claimed.
+The FastAPI application has been tested locally with feature input. A separate public FastAPI deployment is not currently claimed.
 
-If you want to run the alternate API entry point, use:
+An alternate API entry point is available through `api.py`:
 
-```bash
+```powershell
 py -m uvicorn api:app --reload
 ```
 
-### Run batch prediction
+Use the entry point that matches the API implementation you intend to run.
 
-```bash
+### Run Batch Prediction
+
+```powershell
 py predict.py "dataset/ant-1.7 (1).csv"
 ```
 
-Use a valid CSV file supported by the prediction script.
+Replace the example path with a CSV file supported by the prediction script.
 
-### Run tests
+### Run Tests
 
-```bash
-pytest tests/ -v
+```powershell
+py -m pytest tests/ -v
 ```
 
-### Retrain the model
+### Retrain the Model
 
-```bash
+```powershell
 py train.py
 ```
 
-Training can take considerable time because it includes model optimization and ensemble training. Run it only when you intend to retrain the model.
+Training may take considerable time because it includes model optimization and ensemble training. Run this command only when you intend to retrain the model.
 
 ## API Usage
 
-The FastAPI application provides a prediction endpoint:
+The FastAPI application provides the following endpoints:
 
-- `POST /predict` — returns a defect prediction, status, probability, and decision threshold.
 - `GET /` — returns API information.
+- `POST /predict` — returns a defect prediction, status, probability, and applied decision threshold.
 
-Use the interactive Swagger documentation at `http://127.0.0.1:8000/docs` to inspect the available endpoints and test requests.
+Use the interactive Swagger documentation at `http://127.0.0.1:8000/docs` while the local API server is running.
 
-The API expects software metric inputs compatible with the project's preprocessing pipeline. Missing metrics may be filled with zeros, so meaningful feature values should be supplied for useful predictions.
+The API expects software metric inputs compatible with the project's preprocessing pipeline. Supply meaningful feature values for useful predictions. Missing values may be filled during preprocessing, so incomplete inputs can produce less reliable results.
 
 ## Known Limitations
 
 - **Generalization:** Benchmark results do not guarantee similar performance on unseen software projects.
-- **Dataset limitations:** Historical datasets may contain project-specific patterns.
-- **Threshold dependence:** Classification results depend on the selected decision threshold.
-- **Class imbalance:** SMOTE-generated samples may not fully represent real-world defects.
-- **Input validation:** Input validation and error handling can be improved.
-- **Production readiness:** The model has not been established as a production-ready defect-triage system and requires further external validation.
+- **Dataset Limitations:** Historical datasets may contain project-specific patterns.
+- **Threshold Dependence:** Classification outcomes depend on the selected decision threshold.
+- **Class Imbalance:** SMOTE-generated samples may not fully represent real-world defects.
+- **Input Validation:** API input validation and error handling can be improved.
+- **Production Readiness:** The model requires further external validation before use in production defect-triage workflows.
 
 ## Future Improvements
 
