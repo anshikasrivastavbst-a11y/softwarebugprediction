@@ -1,19 +1,40 @@
 # Software Bug Prediction
 
-A machine learning project that predicts software defects using CK (Chidamber–Kemerer) object-oriented metrics and Halstead complexity metrics from 21 PROMISE and NASA MDP benchmark datasets.
+A machine learning project that predicts software defects from CK (Chidamber–Kemerer) object-oriented metrics and Halstead complexity metrics, trained on 21 PROMISE and NASA MDP benchmark datasets.
 
-The project includes a model training pipeline, a stacking ensemble, probability calibration, batch prediction, a FastAPI REST API, and a Streamlit web interface.
+The project includes a full training pipeline, a stacking ensemble with probability calibration, batch prediction, a **FastAPI REST API** and a **Streamlit web interface**. Both the API and the web app are deployed publicly on Render.
+
+## Table of Contents
+
+- [Live Demo](#live-demo)
+- [System Architecture](#system-architecture)
+- [Key Features](#key-features)
+- [Model Performance](#model-performance)
+- [Dataset Overview](#dataset-overview)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Installation](#installation)
+- [How to Run](#how-to-run)
+- [API Usage](#api-usage)
+- [Deployment](#deployment)
+- [Testing](#testing)
+- [Known Limitations](#known-limitations)
+- [Future Improvements](#future-improvements)
+- [Disclaimer](#disclaimer)
+- [Author](#author)
 
 ## Live Demo
 
-**Streamlit Web Application:**  
-https://softwarebugprediction.onrender.com
+| Service | Link |
+| ------- | ---- |
+| Streamlit Web App | https://softwarebugprediction.onrender.com |
+| FastAPI REST API (Swagger docs) | https://softwarebugprediction-api.onrender.com/docs |
 
-The hosted application may take some time to start if the hosting service is idle.
+Both services are hosted on Render's free tier. After a period of inactivity the service goes to sleep, so the **first request may take 30–60 seconds** to respond.
 
 ## System Architecture
 
-```text
+```
 Software Metrics
        |
 Preprocessing & Feature Engineering
@@ -38,37 +59,45 @@ Decision Threshold: 0.430
 Buggy / Not Buggy
 ```
 
+Serving layer:
+
+```
+Client  ->  FastAPI (api.py)  ->  Preprocessing + Model (inference.py)  ->  JSON response
+Browser ->  Streamlit (streamlit_app.py)  ->  Preprocessing + Model       ->  Prediction UI
+```
+
 ## Key Features
 
-- **Ensemble Learning:** Combines XGBoost, LightGBM, and Random Forest with Logistic Regression as the meta-learner.
-- **Feature Engineering:** Creates additional software complexity and coupling metrics.
-- **Feature Selection:** Uses 63 selected features from a 64-feature scaled input.
-- **Data Preprocessing:** Processes numerical features, handles missing values, and removes selected noisy features.
-- **Class Imbalance Handling:** Uses SMOTE during training.
-- **Hyperparameter Optimization:** Uses Optuna to tune model parameters.
-- **Probability Calibration:** Uses isotonic regression to calibrate prediction probabilities.
-- **Threshold-Based Classification:** Applies a decision threshold of 0.430.
-- **Multiple Interfaces:** Supports a Streamlit web interface, a FastAPI REST API, and batch prediction.
+- **Ensemble Learning:** XGBoost, LightGBM and Random Forest combined with a Logistic Regression meta-learner.
+- **Feature Engineering:** Additional software complexity and coupling metrics derived from the raw inputs.
+- **Feature Selection:** 63 selected features from a 64-feature scaled input.
+- **Data Preprocessing:** Numerical feature handling, missing value imputation and removal of noisy features.
+- **Class Imbalance Handling:** SMOTE applied during training.
+- **Hyperparameter Optimization:** Optuna used to tune model parameters.
+- **Probability Calibration:** Isotonic regression for calibrated probabilities.
+- **Threshold-Based Classification:** Decision threshold of 0.430, selected on a separate calibration set.
+- **Multiple Interfaces:** Streamlit web app, FastAPI REST API and batch prediction from CSV.
+- **Public Deployment:** API and web app both hosted on Render.
 
 ## Model Performance
 
-The reported evaluation uses a held-out test set of 2,532 samples. The decision threshold was selected using a separate calibration set.
+The evaluation uses a held-out test set of 2,532 samples. The decision threshold was selected on a separate calibration set, so the test set was not used for tuning.
 
-| Metric | Value |
-|---|---:|
-| Accuracy | 79.30% |
-| Macro F1-Score | 0.7852 |
-| Buggy F1-Score | 0.7441 |
+| Metric             | Value  |
+| ------------------ | ------ |
+| Accuracy           | 79.30% |
+| Macro F1-Score     | 0.7852 |
+| Buggy F1-Score     | 0.7441 |
 | Not-Buggy F1-Score | 0.8263 |
-| ROC-AUC | 0.8465 |
-| Decision Threshold | 0.430 |
+| ROC-AUC            | 0.8465 |
+| Decision Threshold | 0.430  |
 
 ### Confusion Matrix
 
 | Actual / Predicted | Not Buggy | Buggy |
-|---|---:|---:|
-| Not Buggy | 1,246 | 239 |
-| Buggy | 285 | 762 |
+| ------------------ | --------- | ----- |
+| Not Buggy          | 1,246     | 239   |
+| Buggy              | 285       | 762   |
 
 These results represent the reported benchmark evaluation. Performance may vary across datasets and software projects.
 
@@ -76,13 +105,13 @@ These results represent the reported benchmark evaluation. Performance may vary 
 
 The project uses 21 PROMISE and NASA MDP benchmark datasets, with 16,877 samples reported after deduplication.
 
-| Dataset Group | Datasets |
-|---|---|
-| Apache Projects | ant-1.7, camel-1.6, log4j-1.1, lucene-2.0, poi-2.0, xalan-2.4, xerces-1.2, xerces-1.3 |
-| Eclipse / IDE | jedit-3.2, jedit-4.2 |
-| Other Open-Source Projects | velocity-1.6, synapse-1.0, synapse-1.2, tomcat |
-| Additional Projects | data_arc, data_ivy-2.0, data_prop-6, data_redaktor |
-| NASA MDP | kc1, pc1, JM1 |
+| Dataset Group              | Datasets                                                                              |
+| -------------------------- | ------------------------------------------------------------------------------------- |
+| Apache Projects            | ant-1.7, camel-1.6, log4j-1.1, lucene-2.0, poi-2.0, xalan-2.4, xerces-1.2, xerces-1.3 |
+| Eclipse / IDE              | jedit-3.2, jedit-4.2                                                                  |
+| Other Open-Source Projects | velocity-1.6, synapse-1.0, synapse-1.2, tomcat                                        |
+| Additional Projects        | data_arc, data_ivy-2.0, data_prop-6, data_redaktor                                    |
+| NASA MDP                   | kc1, pc1, JM1                                                                         |
 
 ## Technology Stack
 
@@ -90,32 +119,37 @@ The project uses 21 PROMISE and NASA MDP benchmark datasets, with 16,877 samples
 - **Machine Learning:** Scikit-learn, XGBoost, LightGBM, Random Forest
 - **Data Processing:** Pandas, NumPy
 - **Model Optimization:** Optuna
-- **API:** FastAPI
+- **API:** FastAPI, Uvicorn
 - **Web Interface:** Streamlit
 - **Model Persistence:** Joblib
 - **Testing:** Pytest
+- **Deployment:** Render
 
 ## Project Structure
 
-```text
+```
 softwarebugprediction/
-├── .streamlit/
-├── dataset/
-├── tests/
-├── api.py
-├── app.py
-├── streamlit_app.py
-├── train.py
-├── preprocessing.py
-├── inference.py
-├── predict.py
-├── experiment.py
+├── .streamlit/                  # Streamlit configuration
+├── dataset/                     # PROMISE / NASA MDP datasets
+├── tests/                       # Pytest test suite
+├── api.py                       # FastAPI application (deployed entry point)
+├── app.py                       # Alternate API entry point
+├── streamlit_app.py             # Streamlit web interface
+├── train.py                     # Model training pipeline
+├── preprocessing.py             # Preprocessing and feature engineering
+├── inference.py                 # Shared inference logic
+├── predict.py                   # Batch prediction script
+├── experiment.py                # Experiments
+├── generate_thesis_*.py         # Scripts that generate thesis tables, results and assets
+├── model.pkl                    # Trained stacking model
+├── scaler.pkl                   # Fitted RobustScaler
+├── imputer.pkl                  # Fitted imputer
+├── selected_features.pkl        # Selected feature names
+├── threshold.pkl                # Decision threshold
 ├── requirements.txt
 ├── MODEL_CARD.md
 └── README.md
 ```
-
-The repository may also contain saved model artifacts, test files, logs, and prediction outputs. Add them to this tree if they are present and relevant to the project.
 
 ## Installation
 
@@ -150,68 +184,139 @@ pip install -r requirements.txt
 
 ## How to Run
 
-### Run the Streamlit Web Application
+### Streamlit Web Application
 
-```powershell
+```bash
 py -m streamlit run streamlit_app.py
 ```
 
-Open the local URL displayed in the terminal.
+Open the local URL shown in the terminal.
 
-### Run the FastAPI REST API
+### FastAPI REST API
 
-Start the API:
-
-```powershell
-py -m uvicorn app:app --reload
-```
-
-Open the interactive API documentation:
-
-http://127.0.0.1:8000/docs
-
-The FastAPI application has been tested locally with feature input. A separate public FastAPI deployment is not currently claimed.
-
-An alternate API entry point is available through `api.py`:
-
-```powershell
+```bash
 py -m uvicorn api:app --reload
 ```
 
-Use the entry point that matches the API implementation you intend to run.
+Then open the interactive Swagger documentation at <http://127.0.0.1:8000/docs>.
 
-### Run Batch Prediction
+### Batch Prediction
 
-```powershell
+```bash
 py predict.py "dataset/ant-1.7 (1).csv"
 ```
 
-Replace the example path with a CSV file supported by the prediction script.
-
-### Run Tests
-
-```powershell
-py -m pytest tests/ -v
-```
+Replace the path with any CSV file supported by the prediction script.
 
 ### Retrain the Model
 
-```powershell
+```bash
 py train.py
 ```
 
-Training may take considerable time because it includes model optimization and ensemble training. Run this command only when you intend to retrain the model.
+Training can take a long time because it includes hyperparameter optimization and ensemble training. Run it only when you intend to retrain.
 
 ## API Usage
 
-The FastAPI application provides the following endpoints:
+**Base URL (live):** `https://softwarebugprediction-api.onrender.com`
 
-- `GET /` — returns API information.
-- `POST /predict` — returns a defect prediction, status, probability, and applied decision threshold.
+**Interactive docs:** `https://softwarebugprediction-api.onrender.com/docs`
 
-Use the interactive Swagger documentation at `http://127.0.0.1:8000/docs` while the local API server is running.
+### Endpoints
 
-The API expects software metric inputs compatible with the project's preprocessing pipeline. Supply meaningful feature values for useful predictions. Missing values may be filled during preprocessing, so incomplete inputs can produce less reliable results.
+| Method | Endpoint   | Description                                                    |
+| ------ | ---------- | -------------------------------------------------------------- |
+| GET    | `/`        | Returns basic API information                                  |
+| POST   | `/predict` | Returns the defect prediction, status, probability and threshold |
+
+### POST /predict
+
+Send a JSON object of software metrics. The keys must match the feature names expected by the preprocessing pipeline (see `selected_features.pkl` and the column names in `test.csv`).
+
+**Example request (cURL):**
+
+```bash
+curl -X POST "https://softwarebugprediction-api.onrender.com/predict" \
+  -H "Content-Type: application/json" \
+  -H "accept: application/json" \
+  -d '{
+        "wmc": 12,
+        "dit": 2,
+        "noc": 0,
+        "cbo": 8,
+        "rfc": 25,
+        "lcom": 10,
+        "loc": 150
+      }'
+```
+
+**Example request (Python):**
+
+```python
+import requests
+
+url = "https://softwarebugprediction-api.onrender.com/predict"
+payload = {
+    "wmc": 12,
+    "dit": 2,
+    "noc": 0,
+    "cbo": 8,
+    "rfc": 25,
+    "lcom": 10,
+    "loc": 150,
+}
+
+response = requests.post(url, json=payload, timeout=90)
+print(response.json())
+```
+
+The example above sends only 7 metrics (`wmc`, `dit`, `noc`, `cbo`, `rfc`, `lcom`, `loc`). Any feature that is not supplied is filled in by the imputer, so for reliable predictions send as many of the model's features as possible.
+
+**Example response:**
+
+```json
+{
+  "prediction": 0,
+  "status": "Not Buggy",
+  "probability": 0.2288,
+  "applied_threshold": 0.43
+}
+```
+
+| Field               | Meaning                                                            |
+| ------------------- | ------------------------------------------------------------------ |
+| `prediction`        | `1` = Buggy, `0` = Not Buggy                                       |
+| `status`            | Human-readable label                                               |
+| `probability`       | Calibrated probability that the code is buggy (0 to 1)             |
+| `applied_threshold` | Cut-off used to convert the probability into a class (0.43)        |
+
+A prediction of `Buggy` is returned when `probability >= applied_threshold`.
+
+> **Note:** Missing features are filled by the preprocessing imputer, so incomplete inputs can produce less reliable results. Always supply meaningful values for as many features as possible.
+
+## Deployment
+
+Both services are deployed on Render from this repository.
+
+**FastAPI service (Web Service)**
+
+| Setting         | Value                                         |
+| --------------- | --------------------------------------------- |
+| Language        | Python 3                                      |
+| Branch          | `main`                                        |
+| Build Command   | `pip install -r requirements.txt`             |
+| Start Command   | `uvicorn api:app --host 0.0.0.0 --port $PORT` |
+| Instance Type   | Free                                          |
+
+**Streamlit service (Web Service)** is deployed separately from the same repository.
+
+Free-tier services sleep after a period of inactivity, so the first request after idle time is slow.
+
+## Testing
+
+```bash
+py -m pytest tests/ -v
+```
 
 ## Known Limitations
 
@@ -219,23 +324,26 @@ The API expects software metric inputs compatible with the project's preprocessi
 - **Dataset Limitations:** Historical datasets may contain project-specific patterns.
 - **Threshold Dependence:** Classification outcomes depend on the selected decision threshold.
 - **Class Imbalance:** SMOTE-generated samples may not fully represent real-world defects.
-- **Input Validation:** API input validation and error handling can be improved.
-- **Production Readiness:** The model requires further external validation before use in production defect-triage workflows.
+- **Input Validation:** The `/predict` endpoint accepts a free-form JSON object. Unrecognised feature names are silently ignored and missing features are filled by the imputer, so malformed input can still return a `200` response with a prediction. A typed request schema is planned (see Future Improvements).
+- **Hosting:** The free-tier deployment has cold starts and limited resources.
+- **Production Readiness:** The model needs further external validation before use in real defect-triage workflows.
 
 ## Future Improvements
 
+- Add a typed Pydantic request schema so Swagger shows every feature and invalid input is rejected with clear errors.
+- Add a `GET /health` endpoint that reports whether the model has loaded.
+- Version the API (for example `/v1/predict`).
 - Evaluate generalization using project-wise or time-based splits.
 - Compare performance against simpler baseline models.
-- Improve API input validation and error handling.
 - Monitor prediction quality and data drift.
 - Evaluate the model on external datasets.
 
 ## Disclaimer
 
-This project is intended for educational, research, and portfolio purposes. Predictions are estimates based on software metrics and historical benchmark labels. They should not replace code reviews, automated testing, static analysis, or engineering judgment.
+This project is intended for educational, research and portfolio purposes. Predictions are estimates based on software metrics and historical benchmark labels. They should not replace code reviews, automated testing, static analysis or engineering judgment.
 
 ## Author
 
 **Anshika Srivastav**
 
-GitHub: https://github.com/anshikasrivastavbst-a11y
+GitHub: <https://github.com/anshikasrivastavbst-a11y>
